@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GetVariantRequest;
 use App\Http\Resources\VariantResource;
 use App\Models\Variant;
 use App\Http\Requests\StoreVariantRequest;
@@ -9,13 +10,21 @@ use App\Http\Requests\UpdateVariantRequest;
 use Illuminate\Http\JsonResponse;
 
 class VariantController extends Controller {
+
+    public array $availableRelations = [
+        'article',
+    ];
+
     /**
      * Display a listing of the resource.
      *
+     * @param GetVariantRequest $request
      * @return JsonResponse
      */
-    public function index(): JsonResponse {
-        return $this->success(VariantResource::collection(Variant::all()));
+    public function index(GetVariantRequest $request): JsonResponse {
+        $options = $request->validated();
+        $relations = $this->verifyRelations($options);
+        return $this->success(VariantResource::collection(Variant::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
     }
 
     /**
@@ -32,11 +41,13 @@ class VariantController extends Controller {
     /**
      * Display the specified resource.
      *
+     * @param GetVariantRequest $request
      * @param Variant $variant
      * @return JsonResponse
      */
-    public function show(Variant $variant): JsonResponse {
-        return $this->success(new VariantResource($variant));
+    public function show(GetVariantRequest $request, Variant $variant): JsonResponse {
+        $relations = $this->verifyRelations($request->validated());
+        return $this->success(new VariantResource($variant->load($relations)));
     }
 
     /**

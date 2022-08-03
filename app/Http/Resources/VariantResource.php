@@ -15,10 +15,10 @@ class VariantResource extends JsonResource {
     public function toArray($request) {
         return [
             'id' => $this->id,
-            'article' => $this->article,
             'default_code' => $this->description,
             'price' => $this->image,
             'weight' => $this->weight,
+            'article' => new ArticleResource($this->whenLoaded('article')),
         ];
     }
 }
