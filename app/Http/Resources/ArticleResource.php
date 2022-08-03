@@ -18,7 +18,7 @@ class ArticleResource extends JsonResource {
             'name' => $this->name,
             'description' => $this->description,
             'image' => $this->image,
-            'brand' => BrandResource::collection($this->whenLoaded('brand')),
+            'brand' => new BrandResource($this->whenLoaded('brand')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'variants' => VariantResource::collection($this->whenLoaded('variants')),
         ];

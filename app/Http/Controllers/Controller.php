@@ -11,4 +11,16 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests, ApiResponser;
+
+    public array $availableRelations = [];
+
+    protected function verifyRelations(array $options): array {
+        $relations = [];
+        foreach ($options as $relation => $value) {
+            if ($value && in_array($relation, $this->availableRelations, true) ) {
+                $relations[] = $relation;
+            }
+        }
+        return $relations;
+    }
 }
