@@ -17,7 +17,7 @@ class BrandResource extends JsonResource {
             'id' => $this->id,
             'name' => $this->name,
             'image' => $this->image,
-            'articles' => $this->whenLoaded('articles'),
+            'articles' => ArticleResource::collection($this->whenLoaded('articles')),
         ];
     }
 }
