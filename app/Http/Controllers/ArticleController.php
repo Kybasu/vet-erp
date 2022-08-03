@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GetArticleRequest;
 use App\Http\Resources\ArticleResource;
 use App\Models\Article;
 use App\Http\Requests\StoreArticleRequest;
@@ -10,13 +11,22 @@ use Illuminate\Http\JsonResponse;
 
 class ArticleController extends Controller {
 
+    public array $availableRelations = [
+        'brand',
+        'categories',
+        'variants',
+    ];
+
     /**
      * Display a listing of the resource.
      *
+     * @param GetArticleRequest $request
      * @return JsonResponse
      */
-    public function index(): JsonResponse {
-        return $this->success(ArticleResource::collection(Article::all()->load('categories', 'variants')));
+    public function index(GetArticleRequest $request): JsonResponse {
+        $options = $request->validated();
+        $relations = $this->verifyRelations($options);
+        return $this->collectionPaginate(ArticleResource::collection(Article::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
     }
 
     /**
@@ -36,8 +46,10 @@ class ArticleController extends Controller {
      * @param Article $article
      * @return JsonResponse
      */
-    public function show(Article $article): JsonResponse {
-        return $this->success(new ArticleResource($article->load('categories', 'variants')));
+    public function show(GetArticleRequest $request, Article $article): JsonResponse {
+        $options = $request->validated();
+        $relations = $this->verifyRelations($options);
+        return $this->success(new ArticleResource($article->load($relations)));
     }
 
     /**
