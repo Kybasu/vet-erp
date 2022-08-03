@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GetCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Http\Requests\StoreCategoryRequest;
@@ -9,13 +10,22 @@ use App\Http\Requests\UpdateCategoryRequest;
 use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller {
+
+    public array $availableRelations = [
+        'articles',
+        'variants'
+    ];
+
     /**
      * Display a listing of the resource.
      *
+     * @param GetCategoryRequest $request
      * @return JsonResponse
      */
-    public function index(): JsonResponse {
-        return $this->success(CategoryResource::collection(Category::all()));
+    public function index(GetCategoryRequest $request): JsonResponse {
+        $options = $request->validated();
+        $relations = $this->verifyRelations($options);
+        return $this->success(CategoryResource::collection(Category::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
     }
 
     /**
@@ -32,11 +42,13 @@ class CategoryController extends Controller {
     /**
      * Display the specified resource.
      *
+     * @param GetCategoryRequest $request
      * @param Category $category
      * @return JsonResponse
      */
-    public function show(Category $category): JsonResponse {
-        return $this->success(new CategoryResource($category));
+    public function show(GetCategoryRequest $request, Category $category): JsonResponse {
+        $relations = $this->verifyRelations($request->validated());
+        return $this->success(new CategoryResource($category->load($relations)));
     }
 
     /**
