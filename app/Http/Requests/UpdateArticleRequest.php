@@ -12,7 +12,7 @@ class UpdateArticleRequest extends FormRequest
      * @return bool
      */
     public function authorize(): bool {
-        return false;
+        return true;
     }
 
     /**
@@ -26,6 +26,9 @@ class UpdateArticleRequest extends FormRequest
             'name' => 'string|max:255',
             'description' => 'string',
             'image' => 'image|mimes:jpg,png,jpeg,gif,svg,tif,tiff,bmp,gif,xe2,webp,heic|max:5000',
+            'brand_id' => 'nullable|exists:brands,id',
+            'categories' => 'array',
+            'categories.*' => 'exists:categories,id',
         ];
     }
 }

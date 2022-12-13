@@ -26,7 +26,12 @@ class ArticleController extends Controller {
     public function index(GetArticleRequest $request): JsonResponse {
         $options = $request->validated();
         $relations = $this->verifyRelations($options);
-        return $this->collectionPaginate(ArticleResource::collection(Article::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
+        return $this->collectionPaginate(
+            ArticleResource::collection(
+                Article::with($relations)
+                    ->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)
+            )
+        );
     }
 
     /**
@@ -36,8 +41,19 @@ class ArticleController extends Controller {
      * @return JsonResponse
      */
     public function store(StoreArticleRequest $request): JsonResponse {
-        $article = Article::create($request->validated());
-        return $this->resourceCreated(new ArticleResource($article), 'Article created');
+        $data = $request->validated();
+        $data['image'] = $this->uploadImage($request, $data['name']);
+        $article = Article::create($data);
+        if (isset($data['variants'])) {
+            $article->variants()->createMany($data['variants']);
+        }
+        if (isset($data['categories'])) {
+            $article->categories()->attach($data['categories']);
+        }
+        return $this->resourceCreated(
+            new ArticleResource($article->load($this->availableRelations)),
+            'Article created'
+        );
     }
 
     /**
@@ -60,8 +76,18 @@ class ArticleController extends Controller {
      * @return JsonResponse
      */
     public function update(UpdateArticleRequest $request, Article $article): JsonResponse {
-        $article->update($request->validated());
-        return $this->resourceUpdated(new ArticleResource($article), 'Article updated');
+        $data = $request->validated();
+        if (isset($data['image'])) {
+            $data['image'] = $this->uploadImage($request, $data['name']);
+        }
+        $article->update($data);
+        if (isset($data['categories'])) {
+            $article->categories()->sync($data['categories']);
+        }
+        return $this->resourceUpdated(
+            new ArticleResource($article->load($this->availableRelations)),
+            'Article updated'
+        );
     }
 
     /**

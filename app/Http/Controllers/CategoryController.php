@@ -25,7 +25,12 @@ class CategoryController extends Controller {
     public function index(GetCategoryRequest $request): JsonResponse {
         $options = $request->validated();
         $relations = $this->verifyRelations($options);
-        return $this->success(CategoryResource::collection(Category::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
+        return $this->success(
+            CategoryResource::collection(
+                Category::with($relations)
+                    ->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)
+            )
+        );
     }
 
     /**
