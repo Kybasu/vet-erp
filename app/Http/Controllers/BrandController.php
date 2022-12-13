@@ -26,7 +26,11 @@ class BrandController extends Controller {
     public function index(GetBrandRequest $request): JsonResponse {
         $options = $request->validated();
         $relations = $this->verifyRelations($options);
-        return $this->success(BrandResource::collection(Brand::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
+        return $this->success(
+            BrandResource::collection(Brand::with($relations)
+                ->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)
+            )
+        );
     }
 
     /**

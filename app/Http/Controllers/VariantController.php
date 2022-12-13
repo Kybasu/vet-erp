@@ -24,7 +24,12 @@ class VariantController extends Controller {
     public function index(GetVariantRequest $request): JsonResponse {
         $options = $request->validated();
         $relations = $this->verifyRelations($options);
-        return $this->success(VariantResource::collection(Variant::with($relations)->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)));
+        return $this->success(
+            VariantResource::collection(
+                Variant::with($relations)
+                    ->paginate($options['per_page'] ?? 10, ['*'], 'page', $options['page'] ?? 1)
+            )
+        );
     }
 
     /**

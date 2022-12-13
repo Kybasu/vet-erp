@@ -27,4 +27,3 @@ Route::apiResource('articles', ArticleController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('brands', BrandController::class);
 Route::apiResource('users', UserController::class);
-Route::apiResource('roles', RoleController::class);
